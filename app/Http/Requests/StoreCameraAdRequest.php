@@ -37,6 +37,7 @@ class StoreCameraAdRequest extends FormRequest
             'ad.department'              => ['nullable', 'string', 'max:100'],
             'ad.city'                    => ['required', 'string', 'max:100'],
             'ad.postal_code'             => ['nullable', 'string', 'max:10'],
+            'ad.published_at'            => ['nullable', 'date'],
 
             // ── Appareil photo ────────────────────────────────
             'camera.condition'           => ['nullable', 'string', 'max:100'],

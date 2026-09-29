@@ -306,7 +306,7 @@ class AdController extends Controller
             'postal_code'  => $adData['postal_code'] ?? null,
             'likes_count'  => (int) ($adData['likes_count'] ?? 0),
             'status'       => 'active',
-            'published_at' => now(),
+            'published_at' => $adData['published_at'] ?? now(),
         ]);
 
         // ─────────────────────────────────────────────

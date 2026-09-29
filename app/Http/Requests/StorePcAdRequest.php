@@ -36,6 +36,7 @@ class StorePcAdRequest extends FormRequest
             'ad.price'                   => ['required', 'numeric', 'min:0'],
             'ad.city'                    => ['required', 'string', 'max:100'],
             'ad.postal_code'             => ['nullable', 'string', 'max:10'],
+            'ad.published_at'            => ['nullable', 'date'],
 
             // ── Ordinateur ────────────────────────────────────
             'computer.brand'             => ['required', 'string', 'max:100'],

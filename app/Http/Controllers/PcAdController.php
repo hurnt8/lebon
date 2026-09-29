@@ -165,7 +165,7 @@ class PcAdController extends Controller
                 'city'         => $adData['city'],
                 'postal_code'  => $adData['postal_code'] ?? null,
                 'status'       => 'active',
-                'published_at' => now(),
+                'published_at' => $adData['published_at'] ?? now(),
                 'share_token'  => Str::random(10),
             ]);
 

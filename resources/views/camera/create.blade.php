@@ -187,8 +187,9 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Date de publication</label>
-                            <input type="text" class="form-control" value="{{ now()->translatedFormat('d/m/Y à H:i') }}" disabled>
-                            <div class="form-hint">Définie automatiquement à la publication</div>
+                            <input type="datetime-local" name="ad[published_at]" value="{{ old('ad.published_at', now()->format('Y-m-d\TH:i')) }}" class="form-control @error('ad.published_at') is-error @enderror">
+                            @error('ad.published_at')<div class="field-error">{{ $message }}</div>@enderror
+                            <div class="form-hint">Affichée publiquement sur l'annonce.</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Région</label>

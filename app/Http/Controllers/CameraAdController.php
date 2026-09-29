@@ -146,7 +146,7 @@ class CameraAdController extends Controller
                 'department'   => $adData['department'] ?? null,
                 'postal_code'  => $adData['postal_code'] ?? null,
                 'status'       => 'active',
-                'published_at' => now(),
+                'published_at' => $adData['published_at'] ?? now(),
                 'share_token'  => Str::random(10),
             ]);
 
