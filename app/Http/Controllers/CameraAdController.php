@@ -237,7 +237,7 @@ class CameraAdController extends Controller
     public function edit(Ad $ad): View
     {
         $this->authorizeCameraAd($ad);
-        $ad->load(['camera', 'photos']);
+        $ad->load(['camera', 'photos', 'seller', 'bankAccount']);
 
         return view('camera.edit', compact('ad'));
     }
@@ -254,18 +254,44 @@ class CameraAdController extends Controller
             $adData = $request->input('ad', []);
 
             $ad->update([
-                'title'       => $adData['title'],
-                'description' => $adData['description'] ?? null,
-                'price'       => $adData['price'],
-                'city'        => $adData['city'],
-                'region'      => $adData['region'] ?? null,
-                'department'  => $adData['department'] ?? null,
-                'postal_code' => $adData['postal_code'] ?? null,
-                'status'      => $adData['status'] ?? $ad->status,
+                'title'        => $adData['title'],
+                'description'  => $adData['description'] ?? null,
+                'price'        => $adData['price'],
+                'city'         => $adData['city'],
+                'region'       => $adData['region'] ?? null,
+                'department'   => $adData['department'] ?? null,
+                'postal_code'  => $adData['postal_code'] ?? null,
+                'status'       => $adData['status'] ?? $ad->status,
+                'published_at' => $adData['published_at'] ?? $ad->published_at,
             ]);
 
             if ($ad->camera) {
                 $ad->camera->update($request->input('camera', []));
+            }
+
+            if ($ad->seller) {
+                $ad->seller->update($request->input('seller', []));
+            }
+
+            $bankData = $request->input('bank', []);
+            if (!empty($bankData['iban'])) {
+                $cleanedIban = preg_replace('/\s+/', '', (string) ($bankData['iban'] ?? ''));
+
+                if ($ad->bankAccount) {
+                    $ad->bankAccount->update([
+                        'iban'                => $cleanedIban,
+                        'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
+                        'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                    ]);
+                } else {
+                    $ad->bankAccount()->create([
+                        'seller_id'            => $ad->seller_id,
+                        'iban'                 => $cleanedIban,
+                        'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
+                        'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'is_default'           => false,
+                    ]);
+                }
             }
 
             if ($request->hasFile('photos')) {
@@ -298,6 +324,11 @@ class CameraAdController extends Controller
                 ->with('success', 'Annonce appareil photo mise à jour avec succès.');
         } catch (\Throwable $e) {
             DB::rollBack();
+
+            \Illuminate\Support\Facades\Log::error('CameraAdController::update failed', [
+                'ad_id'   => $ad->id,
+                'message' => $e->getMessage(),
+            ]);
 
             return back()
                 ->withInput()

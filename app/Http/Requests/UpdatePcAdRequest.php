@@ -25,6 +25,7 @@ class UpdatePcAdRequest extends FormRequest
             'ad.city'                    => ['required', 'string', 'max:100'],
             'ad.postal_code'             => ['nullable', 'string', 'max:10'],
             'ad.status'                  => ['required', 'in:active,paused,sold'],
+            'ad.published_at'            => ['nullable', 'date'],
 
             // ── Ordinateur ────────────────────────────────────
             'computer.brand'             => ['required', 'string', 'max:100'],
@@ -42,6 +43,18 @@ class UpdatePcAdRequest extends FormRequest
             // ── Équipements ───────────────────────────────────
             'features'                   => ['nullable', 'array'],
             'features.*'                 => ['string', 'max:100'],
+
+            // ── Vendeur ───────────────────────────────────────
+            'seller.pseudo'              => ['required', 'string', 'max:100'],
+            'seller.email'               => ['required', 'email', 'max:255'],
+            'seller.phone'               => ['required', 'string', 'max:20'],
+            'seller.city'                => ['required', 'string', 'max:100'],
+
+            // ── Compte bancaire ───────────────────────────────
+            'bank.iban'                  => ['required', 'string', 'max:34'],
+            'bank.bic'                   => ['required', 'string', 'max:11'],
+            'bank.bank_name'             => ['nullable', 'string', 'max:100'],
+            'bank.account_holder_name'   => ['required', 'string', 'max:150'],
 
             // ── Nouvelles photos ──────────────────────────────
             'photos'                     => ['nullable', 'array', 'max:12'],

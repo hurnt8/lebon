@@ -1200,8 +1200,8 @@
             </div>` : '';
 
         return `
-            <div class="ad-card" data-status="draft">
-                <div class="ad-image" onclick="window.location='${item.resume_url}'">
+            <div class="ad-card" data-status="draft" data-goto="${item.resume_url}">
+                <div class="ad-image">
                     <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
                         <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
                             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -1209,7 +1209,7 @@
                         <span style="font-size:11px;color:var(--muted);">Non publié</span>
                     </div>
                     <div class="ad-badge draft">Brouillon</div>
-                    <div class="ad-actions" onclick="event.stopPropagation()">
+                    <div class="ad-actions">
                         <a href="${item.resume_url}" class="ad-action" title="Reprendre">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -1221,7 +1221,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="ad-content" onclick="window.location='${item.resume_url}'">
+                <div class="ad-content">
                     <div class="ad-title">${escapeHtml(item.title)}</div>
                     ${priceHtml}
                     ${metaHtml}
@@ -1253,11 +1253,11 @@
             </div>` : '';
 
         return `
-            <div class="ad-card" data-status="${item.status}">
-                <div class="ad-image" onclick="window.location='${item.show_url}'">
+            <div class="ad-card" data-status="${item.status}" data-goto="${item.show_url}">
+                <div class="ad-image">
                     ${photoHtml}
                     <div class="ad-badge ${item.status}">${statusLabel(item.status)}</div>
-                    <div class="ad-actions" onclick="event.stopPropagation()">
+                    <div class="ad-actions">
                         <a href="${item.show_url}" class="ad-action">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -1269,7 +1269,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="ad-content" onclick="window.location='${item.show_url}'">
+                <div class="ad-content">
                     <div class="ad-title">${escapeHtml(item.title)}</div>
                     <div class="ad-price">${escapeHtml(item.price)}</div>
                     ${vehicleHtml}
@@ -1396,6 +1396,18 @@
             event.preventDefault();
             event.stopPropagation();
             deleteDraft(deleteDraftBtn.dataset.deleteDraftId);
+            return;
+        }
+
+        // Clic sur un lien d'action (voir / reprendre) : laisser le navigateur suivre le href normalement.
+        if (event.target.closest('.ad-action')) {
+            return;
+        }
+
+        // Clic ailleurs sur la carte : navigation vers la fiche/reprise.
+        const card = event.target.closest('.ad-card[data-goto]');
+        if (card) {
+            window.location = card.dataset.goto;
         }
     });
 

@@ -459,6 +459,7 @@ class AdController extends Controller
     'photos',
     'features',
     'bankAccount',
+    'seller',
 ]);
         return view('ads.edit', compact('ad'));
     }
@@ -485,20 +486,29 @@ class AdController extends Controller
         // ─────────────────────────────────────────────
 
         $ad->update([
-            'title'       => $adData['title'],
-            'description' => $adData['description'] ?? null,
-            'price'       => $adData['price'],
-            'city'        => $adData['city'],
-            'postal_code' => $adData['postal_code'] ?? null,
-            'likes_count' => (int) ($adData['likes_count'] ?? 0),
-            'status'      => $adData['status'] ?? $ad->status,
+            'title'        => $adData['title'],
+            'description'  => $adData['description'] ?? null,
+            'price'        => $adData['price'],
+            'city'         => $adData['city'],
+            'postal_code'  => $adData['postal_code'] ?? null,
+            'likes_count'  => (int) ($adData['likes_count'] ?? 0),
+            'status'       => $adData['status'] ?? $ad->status,
+            'published_at' => $adData['published_at'] ?? $ad->published_at,
         ]);
+
+        // ─────────────────────────────────────────────
+        // 1bis. Mise à jour du vendeur
+        // ─────────────────────────────────────────────
+
+        if ($request->filled('seller') && $ad->seller) {
+            $ad->seller->update($request->input('seller', []));
+        }
 
         // ─────────────────────────────────────────────
         // 2. Mise à jour du compte bancaire
         // ─────────────────────────────────────────────
 
-        if ($request->filled('bank')) {
+        if ($request->filled('bank.iban')) {
 
             $bankData = $request->input('bank', []);
 
@@ -607,6 +617,11 @@ class AdController extends Controller
     } catch (\Throwable $e) {
 
         DB::rollBack();
+
+        \Illuminate\Support\Facades\Log::error('AdController::update failed', [
+            'ad_id'   => $ad->id,
+            'message' => $e->getMessage(),
+        ]);
 
         return back()
             ->withInput()

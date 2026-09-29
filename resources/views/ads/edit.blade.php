@@ -307,9 +307,67 @@
                             <label>Nombre de favoris</label>
                             <input type="number" name="ad[likes_count]" value="{{ old('ad.likes_count', $ad->likes_count) }}" min="0" placeholder="0">
                         </div>
+                        <div class="field">
+                            <label>Date et heure de publication</label>
+                            <input type="datetime-local" name="ad[published_at]" value="{{ old('ad.published_at', $ad->published_at?->format('Y-m-d\TH:i')) }}">
+                            @error('ad.published_at')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
                         <div class="field col-2">
                             <label>Description</label>
                             <textarea name="ad[description]" rows="5" placeholder="Décrivez l'état général, l'historique...">{{ old('ad.description', $ad->description) }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ── Vendeur ── --}}
+                <div class="edit-section">
+                    <h2>Vendeur</h2>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>Pseudo</label>
+                            <input type="text" name="seller[pseudo]" value="{{ old('seller.pseudo', $ad->seller->pseudo ?? '') }}">
+                            @error('seller.pseudo')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>Email</label>
+                            <input type="email" name="seller[email]" value="{{ old('seller.email', $ad->seller->email ?? '') }}">
+                            @error('seller.email')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>Téléphone</label>
+                            <input type="tel" name="seller[phone]" value="{{ old('seller.phone', $ad->seller->phone ?? '') }}">
+                            @error('seller.phone')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>Ville vendeur</label>
+                            <input type="text" name="seller[city]" value="{{ old('seller.city', $ad->seller->city ?? '') }}">
+                            @error('seller.city')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ── Compte bancaire ── --}}
+                <div class="edit-section">
+                    <h2>Compte bancaire</h2>
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>IBAN</label>
+                            <input type="text" name="bank[iban]" value="{{ old('bank.iban', $ad->bankAccount->iban ?? '') }}">
+                            @error('bank.iban')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>BIC</label>
+                            <input type="text" name="bank[bic]" value="{{ old('bank.bic', $ad->bankAccount->bic ?? '') }}">
+                            @error('bank.bic')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
+                        <div class="field">
+                            <label>Banque</label>
+                            <input type="text" name="bank[bank_name]" value="{{ old('bank.bank_name', $ad->bankAccount->bank_name ?? '') }}">
+                        </div>
+                        <div class="field">
+                            <label>Titulaire du compte</label>
+                            <input type="text" name="bank[account_holder_name]" value="{{ old('bank.account_holder_name', $ad->bankAccount->account_holder_name ?? '') }}">
+                            @error('bank.account_holder_name')<span class="error-msg">{{ $message }}</span>@enderror
                         </div>
                     </div>
                 </div>

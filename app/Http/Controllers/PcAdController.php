@@ -249,7 +249,7 @@ class PcAdController extends Controller
     public function edit(Ad $ad): View
     {
         $this->authorizePcAd($ad);
-        $ad->load(['computer', 'photos', 'features']);
+        $ad->load(['computer', 'photos', 'features', 'seller.bankAccounts']);
 
         return view('pc.edit', compact('ad'));
     }
@@ -266,16 +266,45 @@ class PcAdController extends Controller
             $adData = $request->input('ad', []);
 
             $ad->update([
-                'title'       => $adData['title'],
-                'description' => $adData['description'] ?? null,
-                'price'       => $adData['price'],
-                'city'        => $adData['city'],
-                'postal_code' => $adData['postal_code'] ?? null,
-                'status'      => $adData['status'] ?? $ad->status,
+                'title'        => $adData['title'],
+                'description'  => $adData['description'] ?? null,
+                'price'        => $adData['price'],
+                'city'         => $adData['city'],
+                'postal_code'  => $adData['postal_code'] ?? null,
+                'status'       => $adData['status'] ?? $ad->status,
+                'published_at' => $adData['published_at'] ?? $ad->published_at,
             ]);
 
             if ($ad->computer) {
                 $ad->computer->update($request->input('computer', []));
+            }
+
+            if ($ad->seller) {
+                $ad->seller->update($request->input('seller', []));
+            }
+
+            $bankData = $request->input('bank', []);
+            if (!empty($bankData['iban']) && $ad->seller) {
+                $cleanedIban = preg_replace('/\s+/', '', (string) ($bankData['iban'] ?? ''));
+                $bankAccount = $ad->seller->bankAccounts()->where('is_default', true)->first()
+                    ?? $ad->seller->bankAccounts()->first();
+
+                if ($bankAccount) {
+                    $bankAccount->update([
+                        'iban'                 => $cleanedIban,
+                        'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
+                        'bank_name'            => $bankData['bank_name'] ?? null,
+                        'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                    ]);
+                } else {
+                    $ad->seller->bankAccounts()->create([
+                        'iban'                 => $cleanedIban,
+                        'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
+                        'bank_name'            => $bankData['bank_name'] ?? null,
+                        'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'is_default'           => true,
+                    ]);
+                }
             }
 
             AdFeature::syncForAd($ad->id, $request->input('features', []));
@@ -310,6 +339,11 @@ class PcAdController extends Controller
                 ->with('success', 'Annonce PC mise à jour avec succès.');
         } catch (\Throwable $e) {
             DB::rollBack();
+
+            \Illuminate\Support\Facades\Log::error('PcAdController::update failed', [
+                'ad_id'   => $ad->id,
+                'message' => $e->getMessage(),
+            ]);
 
             return back()
                 ->withInput()

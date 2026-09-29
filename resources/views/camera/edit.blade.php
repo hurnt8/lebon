@@ -64,6 +64,7 @@
         .form-control.is-error { border-color: var(--red); }
 
         .field-error { font-size: 12px; color: var(--red); margin-top: 5px; }
+        .form-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
         .photos-grid {
             display: grid;
@@ -235,6 +236,61 @@
                         <div class="form-group">
                             <label class="form-label">Code postal</label>
                             <input type="text" name="ad[postal_code]" value="{{ old('ad.postal_code', $ad->postal_code) }}" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date et heure de publication</label>
+                            <input type="datetime-local" name="ad[published_at]" value="{{ old('ad.published_at', $ad->published_at?->format('Y-m-d\TH:i')) }}" class="form-control @error('ad.published_at') is-error @enderror">
+                            @error('ad.published_at')<div class="field-error">{{ $message }}</div>@enderror
+                            <div class="form-hint">Cette date est affichée publiquement sur l'annonce.</div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Vendeur --}}
+                <div class="form-card">
+                    <div class="form-section-title">Vendeur</div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Pseudo <span class="req">*</span></label>
+                            <input type="text" name="seller[pseudo]" value="{{ old('seller.pseudo', $ad->seller->pseudo ?? '') }}" class="form-control @error('seller.pseudo') is-error @enderror">
+                            @error('seller.pseudo')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="req">*</span></label>
+                            <input type="email" name="seller[email]" value="{{ old('seller.email', $ad->seller->email ?? '') }}" class="form-control @error('seller.email') is-error @enderror">
+                            @error('seller.email')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Téléphone <span class="req">*</span></label>
+                            <input type="tel" name="seller[phone]" value="{{ old('seller.phone', $ad->seller->phone ?? '') }}" class="form-control @error('seller.phone') is-error @enderror">
+                            @error('seller.phone')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ville vendeur <span class="req">*</span></label>
+                            <input type="text" name="seller[city]" value="{{ old('seller.city', $ad->seller->city ?? '') }}" class="form-control @error('seller.city') is-error @enderror">
+                            @error('seller.city')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Compte bancaire --}}
+                <div class="form-card">
+                    <div class="form-section-title">Compte bancaire</div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">IBAN <span class="req">*</span></label>
+                            <input type="text" name="bank[iban]" value="{{ old('bank.iban', $ad->bankAccount->iban ?? '') }}" class="form-control @error('bank.iban') is-error @enderror">
+                            @error('bank.iban')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">BIC <span class="req">*</span></label>
+                            <input type="text" name="bank[bic]" value="{{ old('bank.bic', $ad->bankAccount->bic ?? '') }}" class="form-control @error('bank.bic') is-error @enderror">
+                            @error('bank.bic')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
+                        <div class="form-group col-2">
+                            <label class="form-label">Bénéficiaire <span class="req">*</span></label>
+                            <input type="text" name="bank[account_holder_name]" value="{{ old('bank.account_holder_name', $ad->bankAccount->account_holder_name ?? '') }}" class="form-control @error('bank.account_holder_name') is-error @enderror">
+                            @error('bank.account_holder_name')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
                     </div>
                 </div>
