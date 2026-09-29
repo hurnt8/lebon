@@ -26,6 +26,8 @@ class Ad extends Model
         'description',
         'price',
         'city',
+        'region',
+        'department',
         'postal_code',
         'likes_count',
         'status',
@@ -65,6 +67,11 @@ class Ad extends Model
     public function computer(): HasOne
     {
         return $this->hasOne(Computer::class);
+    }
+
+    public function camera(): HasOne
+    {
+        return $this->hasOne(Camera::class);
     }
 
     public function photos(): HasMany

@@ -844,8 +844,40 @@ class AdController extends Controller
 
         $label = $ad->status === 'active' ? 'réactivée' : 'désactivée';
 
-        return redirect()->route('ads.show', $ad)
+        $routeName = match ($ad->category) {
+            'pc'     => 'pc.show',
+            'camera' => 'camera.show',
+            default  => 'ads.show',
+        };
+
+        return redirect()->route($routeName, $ad)
             ->with('success', "L'annonce a été {$label} avec succès.");
+    }
+
+    // ── Supprimer une annonce (toutes catégories confondues) ──
+
+    public function destroy(Ad $ad): JsonResponse
+    {
+        $this->authorizeAd($ad);
+
+        DB::beginTransaction();
+
+        try {
+            AdPhoto::deleteAllForAd($ad->id);
+            SellerBankAccount::where('ad_id', $ad->id)->delete();
+            $ad->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     // ── Générer le lien public ───────────────────────────────
@@ -889,6 +921,8 @@ class AdController extends Controller
         $ad = Ad::with([
     'seller',
     'vehicle',
+    'computer',
+    'camera',
     'photos',
     'features',
     'bankAccount',

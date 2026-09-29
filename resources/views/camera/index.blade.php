@@ -4,7 +4,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Annonces PC - Espace Vendeur</title>
+    <title>Annonces Appareils photo - Espace Vendeur</title>
     <link rel="stylesheet" href="{{ asset('css/lebon.css') }}"/>
     <style>
         .ads-grid {
@@ -143,12 +143,12 @@
     <div class="main">
         <div class="topbar">
             <div class="breadcrumb">
-                <strong>Annonces PC</strong>
+                <strong>Annonces Appareils photo</strong>
             </div>
             <div class="user-menu">
-                <a href="{{ route('pc.create') }}" class="btn-primary">
+                <a href="{{ route('camera.create') }}" class="btn-primary">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></svg>
-                    Nouvelle annonce PC
+                    Nouvelle annonce
                 </a>
                 <div class="user-avatar" onclick="openLogoutModal()">
                     {{ strtoupper(substr(auth()->user()->name ?? 'V', 0, 1)) }}
@@ -163,8 +163,8 @@
             @endif
 
             <div style="margin-bottom:24px;">
-                <h1 class="section-title">Annonces PC</h1>
-                <p class="section-subtitle">Espace dédié à la vente d'ordinateurs — <span id="pcTotalCount">{{ $ads->total() }}</span> annonce(s)</p>
+                <h1 class="section-title">Annonces Appareils photo</h1>
+                <p class="section-subtitle">Espace dédié à la vente d'appareils photo — <span id="cameraTotalCount">{{ $ads->total() }}</span> annonce(s)</p>
             </div>
 
             <div class="ads-grid" id="adsGrid" aria-live="polite">
@@ -175,15 +175,14 @@
 
             <div class="empty-state" id="emptyState" style="display:none;">
                 <div class="empty-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                        <line x1="8" y1="21" x2="16" y2="21"/>
-                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
                     </svg>
                 </div>
-                <div class="empty-title">Aucune annonce PC pour le moment</div>
-                <div class="empty-text">Publiez votre première annonce d'ordinateur</div>
-                <a href="{{ route('pc.create') }}" class="btn-primary">Créer une annonce PC</a>
+                <div class="empty-title">Aucune annonce appareil photo pour le moment</div>
+                <div class="empty-text">Publiez votre première annonce d'appareil photo</div>
+                <a href="{{ route('camera.create') }}" class="btn-primary">Créer une annonce</a>
             </div>
 
             <div class="empty-state" id="errorState" style="display:none;">
@@ -225,14 +224,14 @@
 <script src="{{ asset('js/lebon.js') }}"></script>
 <script src="{{ asset('js/axios.min.js') }}"></script>
 <script>
-    // ========== Chargement des annonces PC via axios ==========
-    const PC_DATA_URL = '{{ route('pc.index.data') }}';
+    // ========== Chargement des annonces Appareils photo via axios ==========
+    const CAMERA_DATA_URL = '{{ route('camera.index.data') }}';
 
     const adsGrid = document.getElementById('adsGrid');
     const emptyState = document.getElementById('emptyState');
     const errorState = document.getElementById('errorState');
     const paginationContainer = document.getElementById('paginationContainer');
-    const pcTotalCount = document.getElementById('pcTotalCount');
+    const cameraTotalCount = document.getElementById('cameraTotalCount');
 
     let currentPage = 1;
 
@@ -242,18 +241,18 @@
         return div.innerHTML;
     }
 
-    function pcCardHTML(item) {
+    function cameraCardHTML(item) {
         const photoHtml = item.photo_url
             ? `<img src="${item.photo_url}" alt="${escapeHtml(item.title)}" loading="lazy">`
             : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-                    <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 </div>`;
 
-        const computerHtml = item.computer ? `
+        const cameraHtml = item.camera ? `
             <div class="ad-meta">
-                <span class="ad-meta-item">${escapeHtml(item.computer.cpu)}</span>
-                <span class="ad-meta-item">${escapeHtml(item.computer.ram)}</span>
-                <span class="ad-meta-item">${escapeHtml(item.computer.storage)}</span>
+                ${item.camera.brand ? `<span class="ad-meta-item">${escapeHtml(item.camera.brand)}</span>` : ''}
+                ${item.camera.type ? `<span class="ad-meta-item">${escapeHtml(item.camera.type)}</span>` : ''}
+                ${item.camera.condition ? `<span class="ad-meta-item">${escapeHtml(item.camera.condition)}</span>` : ''}
             </div>` : '';
 
         return `
@@ -268,7 +267,7 @@
                 <div class="ad-content">
                     <div class="ad-title">${escapeHtml(item.title)}</div>
                     <div class="ad-price">${escapeHtml(item.price)}</div>
-                    ${computerHtml}
+                    ${cameraHtml}
                     <div class="ad-footer">
                         <span>${escapeHtml(item.city)}</span>
                         <span>${escapeHtml(item.published_at)}</span>
@@ -278,7 +277,7 @@
     }
 
     async function deleteAd(id) {
-        if (!confirm('Supprimer définitivement cette annonce PC ? Cette action est irréversible.')) {
+        if (!confirm('Supprimer définitivement cette annonce ? Cette action est irréversible.')) {
             return;
         }
 
@@ -311,7 +310,7 @@
 
         emptyState.style.display = 'none';
         adsGrid.style.display = '';
-        adsGrid.innerHTML = items.map(pcCardHTML).join('');
+        adsGrid.innerHTML = items.map(cameraCardHTML).join('');
     }
 
     function renderPagination(pagination) {
@@ -341,13 +340,13 @@
         adsGrid.innerHTML = '<div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div>';
 
         try {
-            const { data } = await axios.get(PC_DATA_URL, { params: { page } });
+            const { data } = await axios.get(CAMERA_DATA_URL, { params: { page } });
             currentPage = data.pagination.current_page;
-            if (pcTotalCount) pcTotalCount.textContent = data.pagination.total;
+            if (cameraTotalCount) cameraTotalCount.textContent = data.pagination.total;
             renderAds(data.items);
             renderPagination(data.pagination);
         } catch (error) {
-            console.error('Erreur de chargement des annonces PC :', error);
+            console.error('Erreur de chargement des annonces Appareils photo :', error);
             adsGrid.style.display = 'none';
             paginationContainer.innerHTML = '';
             errorState.style.display = '';

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StorePcAdRequest;
-use App\Http\Requests\UpdatePcAdRequest;
+use App\Http\Requests\StoreCameraAdRequest;
+use App\Http\Requests\UpdateCameraAdRequest;
 use App\Models\Ad;
-use App\Models\AdFeature;
 use App\Models\AdPhoto;
-use App\Models\Computer;
+use App\Models\Camera;
 use App\Models\Seller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,54 +16,50 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
-class PcAdController extends Controller
+class CameraAdController extends Controller
 {
-    private function authorizePcAccess(): void
+    private function authorizeCameraAccess(): void
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        abort_unless($user->hasPermission('menu.pc.view'), 403);
+        abort_unless($user->hasPermission('menu.camera.view'), 403);
     }
 
-    private function authorizePcAd(Ad $ad): void
+    private function authorizeCameraAd(Ad $ad): void
     {
-        $this->authorizePcAccess();
+        $this->authorizeCameraAccess();
         abort_unless(Auth::user()->can('manage', $ad), 403);
     }
 
-    // ── Liste des annonces PC ─────────────────────────────────
+    // ── Liste des annonces appareils photo ────────────────────
 
     public function index(): View
     {
-        $this->authorizePcAccess();
+        $this->authorizeCameraAccess();
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // "Annonces PC" : toujours uniquement les annonces du vendeur connecté,
-        // y compris pour un admin. $ads sert seulement au badge de la sidebar,
-        // le contenu réel est chargé côté client via axios (voir indexData()).
-        $totalAds = Ad::category('pc')
+        $totalAds = Ad::category('camera')
             ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
             ->count();
 
         $ads = new \Illuminate\Pagination\LengthAwarePaginator(collect(), $totalAds, 12, 1);
 
-        return view('pc.index', compact('ads'));
+        return view('camera.index', compact('ads'));
     }
 
-    // ── Données JSON des annonces PC (chargées via axios) ────────
+    // ── Données JSON des annonces appareils photo (axios) ─────
 
     public function indexData(Request $request): JsonResponse
     {
-        $this->authorizePcAccess();
+        $this->authorizeCameraAccess();
 
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Toujours filtré sur le seller_id du vendeur connecté, jamais toutes les annonces.
-        $query = Ad::with(['computer', 'photos'])
-            ->category('pc')
+        $query = Ad::with(['camera', 'photos'])
+            ->category('camera')
             ->whereHas('seller', fn($q) => $q->where('user_id', $user->id))
             ->latest();
 
@@ -81,12 +76,12 @@ class PcAdController extends Controller
                 'city'         => $ad->city,
                 'published_at' => $ad->published_at?->diffForHumans(),
                 'photo_url'    => optional($ad->photos->first())->url,
-                'computer'     => $ad->computer ? [
-                    'cpu'     => $ad->computer->cpu,
-                    'ram'     => $ad->computer->ram_gb . ' Go RAM',
-                    'storage' => $ad->computer->formatted_storage,
+                'camera'       => $ad->camera ? [
+                    'brand'     => $ad->camera->brand,
+                    'type'      => $ad->camera->type,
+                    'condition' => $ad->camera->condition,
                 ] : null,
-                'show_url'     => route('pc.show', $ad),
+                'show_url'     => route('camera.show', $ad),
             ];
         })->values();
 
@@ -105,16 +100,16 @@ class PcAdController extends Controller
 
     public function create(): View
     {
-        $this->authorizePcAccess();
+        $this->authorizeCameraAccess();
 
-        return view('pc.create');
+        return view('camera.create');
     }
 
-    // ── Publication de l'annonce PC ───────────────────────────
+    // ── Publication de l'annonce appareil photo ───────────────
 
-    public function store(StorePcAdRequest $request): RedirectResponse
+    public function store(StoreCameraAdRequest $request): RedirectResponse
     {
-        $this->authorizePcAccess();
+        $this->authorizeCameraAccess();
 
         DB::beginTransaction();
 
@@ -137,48 +132,41 @@ class PcAdController extends Controller
                 ]
             );
 
-            // 2. Compte bancaire
-            $bankData = $request->input('bank');
-            $cleanedIban = preg_replace('/\s+/', '', (string) $bankData['iban']);
-
-            $existingBank = $seller->bankAccounts()->where('iban', $cleanedIban)->first();
-
-            if (!$existingBank) {
-                $seller->bankAccounts()->create([
-                    'iban'                => $cleanedIban,
-                    'bic'                 => strtoupper((string) $bankData['bic']),
-                    'bank_name'           => $bankData['bank_name'] ?? null,
-                    'account_holder_name' => $bankData['account_holder_name'],
-                    'is_default'          => true,
-                ]);
-            }
-
-            // 3. Annonce
+            // 2. Annonce
             $adData = $request->input('ad');
 
             $ad = Ad::create([
                 'seller_id'    => $seller->id,
-                'category'     => 'pc',
+                'category'     => 'camera',
                 'title'        => $adData['title'],
                 'description'  => $adData['description'] ?? null,
                 'price'        => $adData['price'],
                 'city'         => $adData['city'],
+                'region'       => $adData['region'] ?? null,
+                'department'   => $adData['department'] ?? null,
                 'postal_code'  => $adData['postal_code'] ?? null,
                 'status'       => 'active',
                 'published_at' => now(),
                 'share_token'  => Str::random(10),
             ]);
 
-            // 4. Ordinateur
-            $computerData = $request->input('computer');
-            Computer::create(array_merge($computerData, ['ad_id' => $ad->id]));
+            // 3. Compte bancaire (un compte dédié par annonce)
+            $bankData = $request->input('bank');
+            $cleanedIban = preg_replace('/\s+/', '', (string) $bankData['iban']);
 
-            // 5. Équipements
-            if ($request->filled('features')) {
-                AdFeature::syncForAd($ad->id, $request->input('features'));
-            }
+            $ad->bankAccount()->create([
+                'seller_id'            => $seller->id,
+                'iban'                 => $cleanedIban,
+                'bic'                  => strtoupper((string) $bankData['bic']),
+                'account_holder_name'  => $bankData['account_holder_name'],
+                'is_default'           => false,
+            ]);
 
-            // 6. Photos
+            // 4. Appareil photo
+            $cameraData = $request->input('camera');
+            Camera::create(array_merge($cameraData, ['ad_id' => $ad->id]));
+
+            // 5. Photos (3 maximum)
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $index => $file) {
                     $filename  = Str::uuid() . '.' . $file->getClientOriginalExtension();
@@ -202,8 +190,8 @@ class PcAdController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('pc.show', $ad)
-                ->with('success', 'Votre annonce PC a été publiée avec succès !');
+                ->route('camera.show', $ad)
+                ->with('success', 'Votre annonce appareil photo a été publiée avec succès !');
 
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -219,21 +207,21 @@ class PcAdController extends Controller
         }
     }
 
-    // ── Détail d'une annonce PC ────────────────────────────────
+    // ── Détail d'une annonce appareil photo ───────────────────
 
     public function show(Ad $ad): View
     {
-        $this->authorizePcAd($ad);
-        $ad->load(['seller', 'computer', 'photos', 'features']);
+        $this->authorizeCameraAd($ad);
+        $ad->load(['seller', 'camera', 'photos', 'bankAccount']);
 
-        return view('pc.show', compact('ad'));
+        return view('camera.show', compact('ad'));
     }
 
     // ── Générer le lien public ─────────────────────────────────
 
     public function share(Ad $ad): RedirectResponse
     {
-        $this->authorizePcAd($ad);
+        $this->authorizeCameraAd($ad);
 
         if (!$ad->share_token) {
             $ad->update(['share_token' => Str::random(10)]);
@@ -241,24 +229,24 @@ class PcAdController extends Controller
 
         $publicUrl = route('ads.public.appareil', ['c' => $ad->share_token]);
 
-        return redirect()->route('pc.show', $ad)->with('share_url', $publicUrl);
+        return redirect()->route('camera.show', $ad)->with('share_url', $publicUrl);
     }
 
     // ── Formulaire de modification ────────────────────────────
 
     public function edit(Ad $ad): View
     {
-        $this->authorizePcAd($ad);
-        $ad->load(['computer', 'photos', 'features']);
+        $this->authorizeCameraAd($ad);
+        $ad->load(['camera', 'photos']);
 
-        return view('pc.edit', compact('ad'));
+        return view('camera.edit', compact('ad'));
     }
 
     // ── Enregistrement des modifications ──────────────────────
 
-    public function update(UpdatePcAdRequest $request, Ad $ad): RedirectResponse
+    public function update(UpdateCameraAdRequest $request, Ad $ad): RedirectResponse
     {
-        $this->authorizePcAd($ad);
+        $this->authorizeCameraAd($ad);
 
         DB::beginTransaction();
 
@@ -270,21 +258,21 @@ class PcAdController extends Controller
                 'description' => $adData['description'] ?? null,
                 'price'       => $adData['price'],
                 'city'        => $adData['city'],
+                'region'      => $adData['region'] ?? null,
+                'department'  => $adData['department'] ?? null,
                 'postal_code' => $adData['postal_code'] ?? null,
                 'status'      => $adData['status'] ?? $ad->status,
             ]);
 
-            if ($ad->computer) {
-                $ad->computer->update($request->input('computer', []));
+            if ($ad->camera) {
+                $ad->camera->update($request->input('camera', []));
             }
-
-            AdFeature::syncForAd($ad->id, $request->input('features', []));
 
             if ($request->hasFile('photos')) {
                 $existingCount = $ad->photos()->count();
 
                 foreach ($request->file('photos') as $index => $file) {
-                    if ($existingCount + $index >= 12) {
+                    if ($existingCount + $index >= 3) {
                         break;
                     }
 
@@ -306,8 +294,8 @@ class PcAdController extends Controller
             DB::commit();
 
             return redirect()
-                ->route('pc.show', $ad)
-                ->with('success', 'Annonce PC mise à jour avec succès.');
+                ->route('camera.show', $ad)
+                ->with('success', 'Annonce appareil photo mise à jour avec succès.');
         } catch (\Throwable $e) {
             DB::rollBack();
 

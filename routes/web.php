@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CameraAdController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PcAdController;
@@ -47,6 +48,7 @@ Route::get('/opcache-status', function () {
 
 // ── Routes publiques (sans authentification) ──────────────────
 Route::get('/vehicule/ad',               [AdController::class, 'publicShow'])->name('ads.public');
+Route::get('/appareil/ad',               [AdController::class, 'publicShow'])->name('ads.public.appareil');
 Route::get('/vehicule/favoris',          [AdController::class, 'favorites'])->name('ads.favorites');
 Route::get('/annonces/{ad}/reserver',                           [AdController::class, 'reserve'])->name('ads.reserve');
 Route::get('/annonces/{ad}/reserver/formulaire',                [AdController::class, 'reserveForm'])->name('ads.reserve.form');
@@ -93,11 +95,26 @@ Route::middleware('auth')->group(function () {
     // /d6t1z/{ad} ci-dessous, sinon "pc" est interprété comme un id d'annonce
     // (Laravel matche les routes dans l'ordre de déclaration) et pc.index
     // devient inatteignable (404 au lieu de la liste des annonces PC).
-    Route::get('/d6t1z/pc',           [PcAdController::class, 'index'])->name('pc.index');
-    Route::get('/d6t1z/pc/data',      [PcAdController::class, 'indexData'])->name('pc.index.data');
-    Route::get('/d6t1z/pc/creer',     [PcAdController::class, 'create'])->name('pc.create');
-    Route::post('/d6t1z/pc',          [PcAdController::class, 'store'])->name('pc.store');
-    Route::get('/d6t1z/pc/{ad}',      [PcAdController::class, 'show'])->name('pc.show');
+    Route::get('/d6t1z/pc',              [PcAdController::class, 'index'])->name('pc.index');
+    Route::get('/d6t1z/pc/data',         [PcAdController::class, 'indexData'])->name('pc.index.data');
+    Route::get('/d6t1z/pc/creer',        [PcAdController::class, 'create'])->name('pc.create');
+    Route::post('/d6t1z/pc',             [PcAdController::class, 'store'])->name('pc.store');
+    Route::get('/d6t1z/pc/{ad}/editer',  [PcAdController::class, 'edit'])->name('pc.edit');
+    Route::put('/d6t1z/pc/{ad}',         [PcAdController::class, 'update'])->name('pc.update');
+    Route::get('/d6t1z/pc/{ad}/partager',[PcAdController::class, 'share'])->name('pc.share');
+    Route::get('/d6t1z/pc/{ad}',         [PcAdController::class, 'show'])->name('pc.show');
+
+    // Espace annonces Appareils photo (nécessite la permission menu.camera.view)
+    // IMPORTANT : ce bloc doit rester déclaré avant les routes génériques
+    // /d6t1z/{ad} ci-dessous, pour la même raison que le bloc PC ci-dessus.
+    Route::get('/d6t1z/camera',              [CameraAdController::class, 'index'])->name('camera.index');
+    Route::get('/d6t1z/camera/data',         [CameraAdController::class, 'indexData'])->name('camera.index.data');
+    Route::get('/d6t1z/camera/creer',        [CameraAdController::class, 'create'])->name('camera.create');
+    Route::post('/d6t1z/camera',             [CameraAdController::class, 'store'])->name('camera.store');
+    Route::get('/d6t1z/camera/{ad}/editer',  [CameraAdController::class, 'edit'])->name('camera.edit');
+    Route::put('/d6t1z/camera/{ad}',         [CameraAdController::class, 'update'])->name('camera.update');
+    Route::get('/d6t1z/camera/{ad}/partager',[CameraAdController::class, 'share'])->name('camera.share');
+    Route::get('/d6t1z/camera/{ad}',         [CameraAdController::class, 'show'])->name('camera.show');
 
     Route::get('/d6t1z/{ad}',                      [AdController::class, 'show'])->name('ads.show');
     Route::get('/d6t1z/{ad}/editer',               [AdController::class, 'edit'])->name('ads.edit');
@@ -106,6 +123,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/d6t1z/{ad}/photos/reorder',      [AdController::class, 'reorderPhotos'])->name('ads.photos.reorder');
     Route::get('/d6t1z/{ad}/partager',             [AdController::class, 'share'])->name('ads.share');
     Route::patch('/d6t1z/{ad}/statut',             [AdController::class, 'toggleStatus'])->name('ads.toggle-status');
+    Route::delete('/d6t1z/{ad}',                   [AdController::class, 'destroy'])->name('ads.destroy');
 
     // Gestion des utilisateurs (admin uniquement)
     Route::middleware('admin')->group(function () {

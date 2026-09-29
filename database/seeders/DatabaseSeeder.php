@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             SellerBankAccountSeeder::class,
             AdSeeder::class,
             PcAdSeeder::class,
+            CameraAdSeeder::class,
         ]);
     }
 }
