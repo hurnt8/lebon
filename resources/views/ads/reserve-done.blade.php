@@ -269,7 +269,7 @@ $noun = match($ad->category) {
 
         {{-- Illustration --}}
         <div class="hero">
-            <img src="/reserve/money-in-the-bank.avif" alt="" aria-hidden="true"/>
+            <img src="{{ asset('RESERVE/money-in-the-bank.avif') }}" alt="" aria-hidden="true"/>
         </div>
 
         <div class="h1">Déposer vos fonds sur votre compte sécurisé leboncoin</div>
@@ -412,7 +412,7 @@ $noun = match($ad->category) {
         </button>
 
         <div class="bravo-hero">
-            <img src="/reserve/money-in-the-bank.avif" alt="" aria-hidden="true"/>
+            <img src="{{ asset('RESERVE/money-in-the-bank.avif') }}" alt="" aria-hidden="true"/>
         </div>
 
         <div class="bravo-title">Bravo !<br/>Voici les prochaines étapes</div>
