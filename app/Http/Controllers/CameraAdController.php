@@ -282,6 +282,7 @@ class CameraAdController extends Controller
                         'iban'                => $cleanedIban,
                         'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
                         'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                     ]);
                 } else {
                     $ad->bankAccount()->create([
@@ -289,6 +290,7 @@ class CameraAdController extends Controller
                         'iban'                 => $cleanedIban,
                         'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
                         'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                         'is_default'           => false,
                     ]);
                 }

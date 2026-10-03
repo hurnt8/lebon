@@ -295,6 +295,7 @@ class PcAdController extends Controller
                         'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
                         'bank_name'            => $bankData['bank_name'] ?? null,
                         'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                     ]);
                 } else {
                     $ad->seller->bankAccounts()->create([
@@ -302,6 +303,7 @@ class PcAdController extends Controller
                         'bic'                  => strtoupper((string) ($bankData['bic'] ?? '')),
                         'bank_name'            => $bankData['bank_name'] ?? null,
                         'account_holder_name'  => $bankData['account_holder_name'] ?? null,
+                        'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                         'is_default'           => true,
                     ]);
                 }

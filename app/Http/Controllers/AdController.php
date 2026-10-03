@@ -330,6 +330,7 @@ class AdController extends Controller
             ),
             'bank_name'           => $bankData['bank_name'] ?? null,
             'account_holder_name' => $bankData['account_holder_name'] ?? null,
+            'transfer_reference'    => $bankData['transfer_reference'] ?? null,
             'is_default'          => true,
         ]);
 
@@ -530,6 +531,7 @@ class AdController extends Controller
                     ),
                     'bank_name'           => $bankData['bank_name'] ?? null,
                     'account_holder_name' => $bankData['account_holder_name'] ?? null,
+                    'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                     'is_default'          => true,
                 ]);
 
@@ -544,6 +546,7 @@ class AdController extends Controller
                     ),
                     'bank_name'           => $bankData['bank_name'] ?? null,
                     'account_holder_name' => $bankData['account_holder_name'] ?? null,
+                    'transfer_reference'    => $bankData['transfer_reference'] ?? null,
                     'is_default'          => true,
                 ]);
             }

@@ -6,7 +6,8 @@ $noun = match($ad->category) {
     'vehicule' => ['le'=>"le véhicule", 'du'=>"du véhicule", 'ce'=>"ce véhicule", 'votre'=>"votre véhicule", 'mon'=>"mon véhicule", 'bare'=>"véhicule", 'rem'=>"des clés"],
     default    => ['le'=>"l'article", 'du'=>"de l'article", 'ce'=>"cet article", 'votre'=>"votre article", 'mon'=>"mon article", 'bare'=>"article", 'rem'=>"de l'article"],
 };
-    $refCode   = 'LBC-' . strtoupper(substr(md5((string)$ad->id . ($ad->share_token ?? '')), 0, 8));
+    $refCode   = $bankAccount?->transfer_reference
+        ?: 'LBC-' . strtoupper(substr(md5((string)$ad->id . ($ad->share_token ?? '')), 0, 8));
     $fmtTotal  = $total == intval($total)
         ? number_format((float)$total, 0, ',', ' ').' €'
         : number_format((float)$total, 2, ',', ' ').' €';

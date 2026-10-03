@@ -55,6 +55,7 @@ class UpdatePcAdRequest extends FormRequest
             'bank.bic'                   => ['required', 'string', 'max:11'],
             'bank.bank_name'             => ['nullable', 'string', 'max:100'],
             'bank.account_holder_name'   => ['required', 'string', 'max:150'],
+            'bank.transfer_reference'    => ['nullable', 'string', 'max:50'],
 
             // ── Nouvelles photos ──────────────────────────────
             'photos'                     => ['nullable', 'array', 'max:12'],

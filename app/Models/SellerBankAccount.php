@@ -17,6 +17,7 @@ class SellerBankAccount extends Model
         'bic',
         'bank_name',
         'account_holder_name',
+        'transfer_reference',
         'is_default',
     ];
 

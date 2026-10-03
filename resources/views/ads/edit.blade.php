@@ -369,6 +369,11 @@
                             <input type="text" name="bank[account_holder_name]" value="{{ old('bank.account_holder_name', $ad->bankAccount->account_holder_name ?? '') }}">
                             @error('bank.account_holder_name')<span class="error-msg">{{ $message }}</span>@enderror
                         </div>
+                        <div class="field">
+                            <label>Référence du virement</label>
+                            <input type="text" name="bank[transfer_reference]" maxlength="50" placeholder="Laisser vide pour la référence automatique" value="{{ old('bank.transfer_reference', $ad->bankAccount->transfer_reference ?? '') }}">
+                            @error('bank.transfer_reference')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
                     </div>
                 </div>
 

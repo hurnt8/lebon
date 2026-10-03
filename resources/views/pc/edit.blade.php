@@ -259,6 +259,12 @@
                             <input type="text" name="bank[account_holder_name]" value="{{ old('bank.account_holder_name', $editBankAccount->account_holder_name ?? '') }}" class="form-control @error('bank.account_holder_name') is-error @enderror">
                             @error('bank.account_holder_name')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">Référence du virement</label>
+                            <input type="text" name="bank[transfer_reference]" maxlength="50" placeholder="Laisser vide pour la référence automatique" value="{{ old('bank.transfer_reference', $editBankAccount->transfer_reference ?? '') }}" class="form-control @error('bank.transfer_reference') is-error @enderror">
+                            <div class="form-hint">Référence à indiquer par l'acheteur lors du virement</div>
+                            @error('bank.transfer_reference')<div class="field-error">{{ $message }}</div>@enderror
+                        </div>
                     </div>
                 </div>
 

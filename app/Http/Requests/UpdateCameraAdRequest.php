@@ -47,6 +47,7 @@ class UpdateCameraAdRequest extends FormRequest
             'bank.iban'                  => ['required', 'string', 'max:34'],
             'bank.bic'                   => ['required', 'string', 'max:11'],
             'bank.account_holder_name'   => ['required', 'string', 'max:150'],
+            'bank.transfer_reference'    => ['nullable', 'string', 'max:50'],
 
             // ── Nouvelles photos ──────────────────────────────
             'photos'                     => ['nullable', 'array', 'max:3'],

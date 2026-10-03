@@ -36,6 +36,7 @@ class UpdateAdRequest extends FormRequest
             'bank.bic'                  => ['nullable', 'string', 'max:11'],
             'bank.bank_name'            => ['nullable', 'string', 'max:100'],
             'bank.account_holder_name'  => ['nullable', 'string', 'max:150'],
+            'bank.transfer_reference'    => ['nullable', 'string', 'max:50'],
 
             // ── Véhicule ──────────────────────────────────────
             'vehicle.brand'                   => ['required', 'string', 'max:100'],
