@@ -69,16 +69,6 @@
         .spec-label { color: var(--muted); margin-bottom: 2px; }
         .spec-value { font-weight: 700; color: var(--text); }
 
-        .feature-chip {
-            display: inline-block;
-            font-size: 12px;
-            padding: 5px 12px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            margin: 0 6px 6px 0;
-        }
-
         .seller-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 
         .seller-avatar {
@@ -145,7 +135,7 @@
     <div class="main">
         <div class="topbar">
             <div class="breadcrumb">
-                <a href="{{ route('pc.index') }}" style="color:var(--muted);text-decoration:none;">Annonces PC</a>
+                <a href="{{ route('camera.index') }}" style="color:var(--muted);text-decoration:none;">Annonces Appareils photo</a>
                 <span>›</span>
                 <strong>{{ $ad->title }}</strong>
             </div>
@@ -165,7 +155,13 @@
             <div class="ad-header">
                 <div class="ad-header-left">
                     <h1>{{ $ad->title }}</h1>
-                    <div class="ad-meta-line">{{ $ad->city }} · Publiée {{ $ad->published_at?->diffForHumans() }}</div>
+                    <div class="ad-meta-line">
+                        {{ $ad->city }}
+                        @if($ad->postal_code) ({{ $ad->postal_code }}) @endif
+                        @if($ad->department) · {{ $ad->department }} @endif
+                        @if($ad->region) · {{ $ad->region }} @endif
+                        · Publiée {{ $ad->published_at?->diffForHumans() }}
+                    </div>
                 </div>
                 <div class="ad-price">{{ $ad->formatted_price }}</div>
             </div>
@@ -196,25 +192,25 @@
                         @endif
                     </div>
 
-                    @if($ad->computer)
+                    @if($ad->camera)
                         <div class="card">
                             <div class="card-title">Caractéristiques</div>
                             <div class="spec-grid">
-                                <div class="spec-item"><div class="spec-label">Marque / Modèle</div><div class="spec-value">{{ $ad->computer->full_name }}</div></div>
-                                <div class="spec-item"><div class="spec-label">Processeur</div><div class="spec-value">{{ $ad->computer->cpu }}</div></div>
-                                <div class="spec-item"><div class="spec-label">Mémoire vive</div><div class="spec-value">{{ $ad->computer->ram_gb }} Go</div></div>
-                                <div class="spec-item"><div class="spec-label">Stockage</div><div class="spec-value">{{ $ad->computer->formatted_storage }}</div></div>
-                                @if($ad->computer->gpu)
-                                    <div class="spec-item"><div class="spec-label">Carte graphique</div><div class="spec-value">{{ $ad->computer->gpu }}</div></div>
+                                <div class="spec-item"><div class="spec-label">Marque</div><div class="spec-value">{{ $ad->camera->brand }}</div></div>
+                                @if($ad->camera->type)
+                                    <div class="spec-item"><div class="spec-label">Type</div><div class="spec-value">{{ $ad->camera->type }}</div></div>
                                 @endif
-                                @if($ad->computer->screen_size)
-                                    <div class="spec-item"><div class="spec-label">Écran</div><div class="spec-value">{{ $ad->computer->screen_size }}"</div></div>
+                                @if($ad->camera->product)
+                                    <div class="spec-item"><div class="spec-label">Produit</div><div class="spec-value">{{ $ad->camera->product }}</div></div>
                                 @endif
-                                @if($ad->computer->os)
-                                    <div class="spec-item"><div class="spec-label">Système</div><div class="spec-value">{{ $ad->computer->os }}</div></div>
+                                @if($ad->camera->universe)
+                                    <div class="spec-item"><div class="spec-label">Univers</div><div class="spec-value">{{ $ad->camera->universe }}</div></div>
                                 @endif
-                                @if($ad->computer->condition)
-                                    <div class="spec-item"><div class="spec-label">État</div><div class="spec-value">{{ $ad->computer->condition }}</div></div>
+                                @if($ad->camera->color)
+                                    <div class="spec-item"><div class="spec-label">Couleur</div><div class="spec-value">{{ $ad->camera->color }}</div></div>
+                                @endif
+                                @if($ad->camera->condition)
+                                    <div class="spec-item"><div class="spec-label">État</div><div class="spec-value">{{ $ad->camera->condition }}</div></div>
                                 @endif
                             </div>
                         </div>
@@ -224,15 +220,6 @@
                         <div class="card">
                             <div class="card-title">Description</div>
                             <p style="font-size:14px;color:var(--text);line-height:1.6;">{{ $ad->description }}</p>
-                        </div>
-                    @endif
-
-                    @if($ad->features->isNotEmpty())
-                        <div class="card">
-                            <div class="card-title">Équipements</div>
-                            @foreach($ad->features as $feature)
-                                <span class="feature-chip">{{ $feature->label }}</span>
-                            @endforeach
                         </div>
                     @endif
 
@@ -248,7 +235,7 @@
                             </div>
                         </div>
                         <div class="card-title" style="margin-bottom:6px;">Statut</div>
-                        <div class="status-{{ $ad->status === 'active' ? 'active' : ($ad->status === 'paused' ? 'paused' : 'active') }}">
+                        <div class="status-{{ $ad->status === 'paused' ? 'paused' : 'active' }}">
                             {{ $ad->status === 'active' ? 'Active' : ($ad->status === 'paused' ? 'En pause' : $ad->status) }}
                         </div>
                     </div>
@@ -270,7 +257,7 @@
                             </form>
                         @endif
 
-                        <a href="{{ route('pc.share', $ad) }}" class="action-btn">
+                        <a href="{{ route('camera.share', $ad) }}" class="action-btn">
                             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
@@ -278,7 +265,7 @@
                             Obtenir le lien public
                         </a>
 
-                        <a href="{{ route('pc.edit', $ad) }}" class="action-btn" style="border-color:var(--orange);color:var(--orange);">
+                        <a href="{{ route('camera.edit', $ad) }}" class="action-btn" style="border-color:var(--orange);color:var(--orange);">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -286,11 +273,20 @@
                             Modifier l'annonce
                         </a>
 
-                        <a href="{{ route('pc.index') }}" class="action-btn" style="margin-bottom:0;">
+                        <a href="{{ route('camera.index') }}" class="action-btn" style="margin-bottom:0;">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
                             Retour aux annonces
                         </a>
                     </div>
+
+                    @if($ad->bankAccount)
+                        <div class="card">
+                            <div class="card-title">Compte bancaire</div>
+                            <div class="spec-item" style="margin-bottom:10px;"><div class="spec-label">IBAN</div><div class="spec-value">{{ $ad->bankAccount->masked_iban }}</div></div>
+                            <div class="spec-item" style="margin-bottom:10px;"><div class="spec-label">BIC</div><div class="spec-value">{{ $ad->bankAccount->bic }}</div></div>
+                            <div class="spec-item"><div class="spec-label">Bénéficiaire</div><div class="spec-value">{{ $ad->bankAccount->account_holder_name }}</div></div>
+                        </div>
+                    @endif
                 </div>
             </div>
 

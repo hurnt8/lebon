@@ -23,6 +23,19 @@ class UpdateAdRequest extends FormRequest
             'ad.postal_code'            => ['nullable', 'string', 'max:10'],
             'ad.likes_count'            => ['nullable', 'integer', 'min:0'],
             'ad.status'                 => ['required', 'in:active,paused,sold'],
+            'ad.published_at'           => ['nullable', 'date'],
+
+            // ── Vendeur ───────────────────────────────────────
+            'seller.pseudo'             => ['nullable', 'string', 'max:100'],
+            'seller.email'              => ['nullable', 'email', 'max:255'],
+            'seller.phone'              => ['nullable', 'string', 'max:20'],
+            'seller.city'               => ['nullable', 'string', 'max:100'],
+
+            // ── Compte bancaire ───────────────────────────────
+            'bank.iban'                 => ['nullable', 'string', 'max:34'],
+            'bank.bic'                  => ['nullable', 'string', 'max:11'],
+            'bank.bank_name'            => ['nullable', 'string', 'max:100'],
+            'bank.account_holder_name'  => ['nullable', 'string', 'max:150'],
 
             // ── Véhicule ──────────────────────────────────────
             'vehicle.brand'                   => ['required', 'string', 'max:100'],

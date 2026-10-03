@@ -306,7 +306,7 @@ class AdController extends Controller
             'postal_code'  => $adData['postal_code'] ?? null,
             'likes_count'  => (int) ($adData['likes_count'] ?? 0),
             'status'       => 'active',
-            'published_at' => now(),
+            'published_at' => $adData['published_at'] ?? now(),
         ]);
 
         // ─────────────────────────────────────────────
@@ -459,6 +459,7 @@ class AdController extends Controller
     'photos',
     'features',
     'bankAccount',
+    'seller',
 ]);
         return view('ads.edit', compact('ad'));
     }
@@ -485,20 +486,29 @@ class AdController extends Controller
         // ─────────────────────────────────────────────
 
         $ad->update([
-            'title'       => $adData['title'],
-            'description' => $adData['description'] ?? null,
-            'price'       => $adData['price'],
-            'city'        => $adData['city'],
-            'postal_code' => $adData['postal_code'] ?? null,
-            'likes_count' => (int) ($adData['likes_count'] ?? 0),
-            'status'      => $adData['status'] ?? $ad->status,
+            'title'        => $adData['title'],
+            'description'  => $adData['description'] ?? null,
+            'price'        => $adData['price'],
+            'city'         => $adData['city'],
+            'postal_code'  => $adData['postal_code'] ?? null,
+            'likes_count'  => (int) ($adData['likes_count'] ?? 0),
+            'status'       => $adData['status'] ?? $ad->status,
+            'published_at' => $adData['published_at'] ?? $ad->published_at,
         ]);
+
+        // ─────────────────────────────────────────────
+        // 1bis. Mise à jour du vendeur
+        // ─────────────────────────────────────────────
+
+        if ($request->filled('seller') && $ad->seller) {
+            $ad->seller->update($request->input('seller', []));
+        }
 
         // ─────────────────────────────────────────────
         // 2. Mise à jour du compte bancaire
         // ─────────────────────────────────────────────
 
-        if ($request->filled('bank')) {
+        if ($request->filled('bank.iban')) {
 
             $bankData = $request->input('bank', []);
 
@@ -607,6 +617,11 @@ class AdController extends Controller
     } catch (\Throwable $e) {
 
         DB::rollBack();
+
+        \Illuminate\Support\Facades\Log::error('AdController::update failed', [
+            'ad_id'   => $ad->id,
+            'message' => $e->getMessage(),
+        ]);
 
         return back()
             ->withInput()
@@ -844,8 +859,40 @@ class AdController extends Controller
 
         $label = $ad->status === 'active' ? 'réactivée' : 'désactivée';
 
-        return redirect()->route('ads.show', $ad)
+        $routeName = match ($ad->category) {
+            'pc'     => 'pc.show',
+            'camera' => 'camera.show',
+            default  => 'ads.show',
+        };
+
+        return redirect()->route($routeName, $ad)
             ->with('success', "L'annonce a été {$label} avec succès.");
+    }
+
+    // ── Supprimer une annonce (toutes catégories confondues) ──
+
+    public function destroy(Ad $ad): JsonResponse
+    {
+        $this->authorizeAd($ad);
+
+        DB::beginTransaction();
+
+        try {
+            AdPhoto::deleteAllForAd($ad->id);
+            SellerBankAccount::where('ad_id', $ad->id)->delete();
+            $ad->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue : ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     // ── Générer le lien public ───────────────────────────────
@@ -889,6 +936,8 @@ class AdController extends Controller
         $ad = Ad::with([
     'seller',
     'vehicle',
+    'computer',
+    'camera',
     'photos',
     'features',
     'bankAccount',

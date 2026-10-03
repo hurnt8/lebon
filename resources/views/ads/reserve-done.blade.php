@@ -1,5 +1,11 @@
 ﻿@php
-    $isPc      = $ad->category === 'pc';
+$isPc = $ad->category !== 'vehicule'; // true pour tout article autre qu'un véhicule
+$noun = match($ad->category) {
+    'pc'       => ['le'=>"l'ordinateur", 'du'=>"de l'ordinateur", 'ce'=>"cet ordinateur", 'votre'=>"votre ordinateur", 'mon'=>"mon ordinateur", 'bare'=>"ordinateur", 'rem'=>"du matériel"],
+    'camera'   => ['le'=>"l'appareil photo", 'du'=>"de l'appareil photo", 'ce'=>"cet appareil photo", 'votre'=>"votre appareil photo", 'mon'=>"mon appareil photo", 'bare'=>"appareil photo", 'rem'=>"du matériel"],
+    'vehicule' => ['le'=>"le véhicule", 'du'=>"du véhicule", 'ce'=>"ce véhicule", 'votre'=>"votre véhicule", 'mon'=>"mon véhicule", 'bare'=>"véhicule", 'rem'=>"des clés"],
+    default    => ['le'=>"l'article", 'du'=>"de l'article", 'ce'=>"cet article", 'votre'=>"votre article", 'mon'=>"mon article", 'bare'=>"article", 'rem'=>"de l'article"],
+};
     $refCode   = 'LBC-' . strtoupper(substr(md5((string)$ad->id . ($ad->share_token ?? '')), 0, 8));
     $fmtTotal  = $total == intval($total)
         ? number_format((float)$total, 0, ',', ' ').' €'
@@ -332,7 +338,7 @@
             <div class="step-body">
                 <div class="step-txt">J'effectue le virement correspondant à la somme négociée en amont ou le prix de base :</div>
                 <div class="price-box">
-                    <span>Prix {{ $isPc ? "de l'ordinateur" : 'du véhicule' }}</span>
+                    <span>Prix {{ $noun['du'] }}</span>
                     <span>{{ $fmtTotal }}</span>
                 </div>
             </div>
@@ -358,7 +364,7 @@
         </div>
 
         {{-- Lien + bouton --}}
-        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter {{ $isPc ? 'cet ordinateur' : 'ce véhicule' }}</a>
+        <a class="cancel-link" href="{{ url()->previous() }}">Je ne souhaite plus acheter {{ $noun['ce'] }}</a>
         <button class="btn-virement" type="button" id="btnVirement">J'ai fait mon virement</button>
 
         {{-- FAQ --}}

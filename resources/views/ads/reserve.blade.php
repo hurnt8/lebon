@@ -208,7 +208,14 @@
 <body>
 <div class="page">
 
-    @php $isPc = $ad->category === 'pc'; @endphp
+@php
+$isPc = $ad->category !== 'vehicule'; // true pour tout article autre qu'un véhicule
+$noun = match($ad->category) {
+    'pc'       => ['le'=>"l'ordinateur", 'du'=>"de l'ordinateur", 'ce'=>"cet ordinateur", 'votre'=>"votre ordinateur", 'mon'=>"mon ordinateur", 'bare'=>"ordinateur", 'rem'=>"du matériel"],
+    'camera'   => ['le'=>"l'appareil photo", 'du'=>"de l'appareil photo", 'ce'=>"cet appareil photo", 'votre'=>"votre appareil photo", 'mon'=>"mon appareil photo", 'bare'=>"appareil photo", 'rem'=>"du matériel"],
+    'vehicule' => ['le'=>"le véhicule", 'du'=>"du véhicule", 'ce'=>"ce véhicule", 'votre'=>"votre véhicule", 'mon'=>"mon véhicule", 'bare'=>"véhicule", 'rem'=>"des clés"],
+    default    => ['le'=>"l'article", 'du'=>"de l'article", 'ce'=>"cet article", 'votre'=>"votre article", 'mon'=>"mon article", 'bare'=>"article", 'rem'=>"de l'article"],
+};
 
     {{-- ── Top bar : titre centré + icône bouclier € ── --}}
     <div class="topbar">
@@ -243,7 +250,7 @@
     {{-- ── Section principale ── --}}
     <div class="main-section">
 
-        <div class="h1">Acheter {{ $isPc ? 'votre ordinateur' : 'votre véhicule' }} en toute confiance</div>
+        <div class="h1">Acheter {{ $noun['votre'] }} en toute confiance</div>
 
         <div>
             <div class="h2" style="margin-bottom: 14px;">Comment ça marche ?</div>
@@ -251,8 +258,8 @@
             <div class="steps-scroll">
                 <div class="step-card">
                     <div class="step-num">1</div>
-                    <div class="step-title">Réservez {{ $isPc ? "l'ordinateur" : 'le véhicule' }}</div>
-                    <div class="step-desc">Avant ou après avoir vu {{ $isPc ? "l'ordinateur" : 'le véhicule' }}, je le réserve pour rassurer le vendeur sur ma volonté d'acheter son {{ $isPc ? 'ordinateur' : 'véhicule' }}. Si je le souhaite, je peux négocier le prix, et ce jusqu'à la remise {{ $isPc ? 'du matériel' : 'des clés' }}.</div>
+                    <div class="step-title">Réservez {{ $noun['le'] }}</div>
+                    <div class="step-desc">Avant ou après avoir vu {{ $noun['le'] }}, je le réserve pour rassurer le vendeur sur ma volonté d'acheter son {{ $noun['bare'] }}. Si je le souhaite, je peux négocier le prix, et ce jusqu'à la remise {{ $noun['rem'] }}.</div>
                 </div>
                 <div class="step-card">
                     <div class="step-num">2</div>
@@ -262,7 +269,7 @@
                 <div class="step-card">
                     <div class="step-num">3</div>
                     <div class="step-title">Payer votre vendeur en toute sécurité</div>
-                    <div class="step-desc">Lors de la remise {{ $isPc ? 'du matériel' : 'des clés' }}, je débloque les fonds au vendeur. Nous sommes instantanément notifiés de la disponibilité des fonds. En cas d'annulation ou de négociation, je récupère tout ou partie de mon paiement.</div>
+                    <div class="step-desc">Lors de la remise {{ $noun['rem'] }}, je débloque les fonds au vendeur. Nous sommes instantanément notifiés de la disponibilité des fonds. En cas d'annulation ou de négociation, je récupère tout ou partie de mon paiement.</div>
                 </div>
             </div>
         </div>
@@ -300,7 +307,7 @@
                 <div class="plan-card">
                     <div class="plan-header"><div class="plan-header-title">{{ $isPc ? 'Paiement sécurisé' : 'Sans Garantie Panne Mécanique' }}</div></div>
                     <div class="plan-price">19,99 €</div>
-                    <div class="plan-txt">Assurez-vous que {{ $isPc ? "l'ordinateur ne vous passe pas sous le nez" : 'le véhicule ne vous passe pas sous le nez' }}.</div>
+                    <div class="plan-txt">Assurez-vous que {{ $noun['le'] }} ne vous passe pas sous le nez.</div>
                     <div class="plan-txt">Votre argent est protégé sur un compte séquestre jusqu'au jour de la transaction.</div>
                     @unless($isPc)
                     <div style="display:flex;flex-direction:column;gap:2px;margin-top:4px;">
@@ -329,10 +336,10 @@
     {{-- ── CTA ── --}}
     <div class="cta-wrap">
         <div class="cgu-txt">
-            En cliquant sur «&nbsp;Réserver {{ $isPc ? 'mon ordinateur' : 'mon véhicule' }}&nbsp;», <a href="#">j'accepte les Conditions Générales d'Utilisation.</a>
+            En cliquant sur «&nbsp;Réserver {{ $noun['mon'] }}&nbsp;», <a href="#">j'accepte les Conditions Générales d'Utilisation.</a>
         </div>
         <a href="{{ $isPc ? route('ads.reserve.recap', $ad) : route('ads.reserve.form', $ad) }}" class="btn-reserve">
-            Réserver {{ $isPc ? 'mon ordinateur' : 'mon véhicule' }}
+            Réserver {{ $noun['mon'] }}
         </a>
     </div>
 

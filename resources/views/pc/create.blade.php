@@ -64,6 +64,7 @@
         .form-control.is-error { border-color: var(--red); }
 
         .field-error { font-size: 12px; color: var(--red); margin-top: 5px; }
+        .form-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
         .features-grid {
             display: grid;
@@ -231,6 +232,12 @@
                         <div class="form-group">
                             <label class="form-label">Code postal</label>
                             <input type="text" name="ad[postal_code]" value="{{ old('ad.postal_code') }}" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date de publication</label>
+                            <input type="datetime-local" name="ad[published_at]" value="{{ old('ad.published_at', now()->format('Y-m-d\TH:i')) }}" class="form-control @error('ad.published_at') is-error @enderror">
+                            @error('ad.published_at')<div class="field-error">{{ $message }}</div>@enderror
+                            <div class="form-hint">Affichée publiquement sur l'annonce.</div>
                         </div>
                     </div>
                 </div>

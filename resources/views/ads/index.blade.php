@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Mes annonces - Espace Vendeur</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
@@ -490,6 +491,16 @@
 
         .ad-action:hover {
             background: var(--orange);
+            color: white;
+        }
+
+        .ad-action.ad-action-delete {
+            border: none;
+            cursor: pointer;
+        }
+
+        .ad-action.ad-action-delete:hover {
+            background: var(--red);
             color: white;
         }
 
@@ -1189,8 +1200,8 @@
             </div>` : '';
 
         return `
-            <div class="ad-card" data-status="draft">
-                <div class="ad-image" onclick="window.location='${item.resume_url}'">
+            <div class="ad-card" data-status="draft" data-goto="${item.resume_url}">
+                <div class="ad-image">
                     <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
                         <svg width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" viewBox="0 0 24 24">
                             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -1198,16 +1209,19 @@
                         <span style="font-size:11px;color:var(--muted);">Non publié</span>
                     </div>
                     <div class="ad-badge draft">Brouillon</div>
-                    <div class="ad-actions" onclick="event.stopPropagation()">
+                    <div class="ad-actions">
                         <a href="${item.resume_url}" class="ad-action" title="Reprendre">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                             </svg>
                         </a>
+                        <button type="button" class="ad-action ad-action-delete" title="Supprimer" data-delete-draft-id="${item.id}">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="ad-content" onclick="window.location='${item.resume_url}'">
+                <div class="ad-content">
                     <div class="ad-title">${escapeHtml(item.title)}</div>
                     ${priceHtml}
                     ${metaHtml}
@@ -1239,20 +1253,23 @@
             </div>` : '';
 
         return `
-            <div class="ad-card" data-status="${item.status}">
-                <div class="ad-image" onclick="window.location='${item.show_url}'">
+            <div class="ad-card" data-status="${item.status}" data-goto="${item.show_url}">
+                <div class="ad-image">
                     ${photoHtml}
                     <div class="ad-badge ${item.status}">${statusLabel(item.status)}</div>
-                    <div class="ad-actions" onclick="event.stopPropagation()">
+                    <div class="ad-actions">
                         <a href="${item.show_url}" class="ad-action">
                             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                             </svg>
                         </a>
+                        <button type="button" class="ad-action ad-action-delete" title="Supprimer" data-delete-id="${item.id}">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="ad-content" onclick="window.location='${item.show_url}'">
+                <div class="ad-content">
                     <div class="ad-title">${escapeHtml(item.title)}</div>
                     <div class="ad-price">${escapeHtml(item.price)}</div>
                     ${vehicleHtml}
@@ -1332,6 +1349,67 @@
             errorState.style.display = '';
         }
     }
+
+    async function deleteAd(id) {
+        if (!confirm('Supprimer définitivement cette annonce ? Cette action est irréversible.')) {
+            return;
+        }
+
+        try {
+            await axios.delete(`/d6t1z/${id}`, {
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            });
+            loadAds(currentPage);
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'annonce :', error);
+            alert('Impossible de supprimer cette annonce. Veuillez réessayer.');
+        }
+    }
+
+    async function deleteDraft(id) {
+        if (!confirm('Supprimer définitivement ce brouillon ?')) {
+            return;
+        }
+
+        try {
+            await axios.delete(`/d6t1z/brouillon/${id}`, {
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+            });
+            loadAds(currentPage);
+        } catch (error) {
+            console.error('Erreur lors de la suppression du brouillon :', error);
+            alert('Impossible de supprimer ce brouillon. Veuillez réessayer.');
+        }
+    }
+
+    adsGrid.addEventListener('click', (event) => {
+        const deleteBtn = event.target.closest('[data-delete-id]');
+        if (deleteBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteAd(deleteBtn.dataset.deleteId);
+            return;
+        }
+
+        const deleteDraftBtn = event.target.closest('[data-delete-draft-id]');
+        if (deleteDraftBtn) {
+            event.preventDefault();
+            event.stopPropagation();
+            deleteDraft(deleteDraftBtn.dataset.deleteDraftId);
+            return;
+        }
+
+        // Clic sur un lien d'action (voir / reprendre) : laisser le navigateur suivre le href normalement.
+        if (event.target.closest('.ad-action')) {
+            return;
+        }
+
+        // Clic ailleurs sur la carte : navigation vers la fiche/reprise.
+        const card = event.target.closest('.ad-card[data-goto]');
+        if (card) {
+            window.location = card.dataset.goto;
+        }
+    });
 
     document.getElementById('retryBtn').addEventListener('click', () => loadAds(currentPage));
 

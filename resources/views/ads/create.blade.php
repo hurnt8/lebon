@@ -971,6 +971,11 @@
                             <input type="number" name="ad[likes_count]" id="a_likes" value="{{ old('ad.likes_count', 0) }}" min="0" placeholder="0">
                             @error('ad.likes_count')<span class="error-msg">{{ $message }}</span>@enderror
                         </div>
+                        <div class="field">
+                            <label>Date de publication</label>
+                            <input type="datetime-local" name="ad[published_at]" value="{{ old('ad.published_at', now()->format('Y-m-d\TH:i')) }}">
+                            @error('ad.published_at')<span class="error-msg">{{ $message }}</span>@enderror
+                        </div>
                         <div class="field col-2">
                             <label>Description</label>
                             <textarea name="ad[description]" rows="5" placeholder="Decrivez l'etat general, l'historique d'entretien...">{{ old('ad.description') }}</textarea>
